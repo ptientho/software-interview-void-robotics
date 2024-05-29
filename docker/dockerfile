@@ -17,8 +17,8 @@ RUN rm requirements.txt
 # Install Gazebo Classic
 RUN sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
 RUN wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-RUN sudo apt-get update
-RUN sudo apt-get install gazebo11 libgazebo11-dev -y
+RUN sudo apt update
+RUN sudo apt install gazebo -y
 
 # Create a user with passwordless sudo
 RUN adduser --uid $USERID --gecos "interview void robotics" --disabled-password $USER
@@ -39,6 +39,8 @@ RUN mkdir -p /home/$USER/ws/src
 
 # Adds to bashrc the ros humble overlay sourcing.
 RUN echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
+# Adds to bashrc ros melodic overlay sourcing.
+RUN echo "source /opt/ros/melodic/setup.bash" >> /home/$USER/.bashrc
 # Adds colcon autocomplete
 RUN echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> /home/$USER/.bashrc
 

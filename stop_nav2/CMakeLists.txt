@@ -11,8 +11,27 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
-find_package(rclcpp_components REQUIRED)
 
+# set variable
+set(SOURCE src/stop_nav2.cpp)
+
+# set dependencies
+set(TARGET_DEPENDS
+
+  rclcpp
+  rclcpp_action
+  nav2_msgs
+  std_msgs
+
+)
+
+add_executable(stop_nav2_goal ${SOURCE})
+ament_target_dependencies(stop_nav2_goal ${TARGET_DEPENDS})
+
+install(TARGETS
+  stop_nav2_goal
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
