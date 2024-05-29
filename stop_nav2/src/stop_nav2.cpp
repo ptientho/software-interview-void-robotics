@@ -10,7 +10,7 @@ public:
 
     StopNav2(std::string node_name) : Node(node_name){
 
-        this->wait_for_timeout_ = std::chrono::milliseconds(1000);
+        this->wait_for_timeout_ = std::chrono::milliseconds(2000);
         this->callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
         this->callback_group_executor_.add_callback_group(this->callback_group_, this->get_node_base_interface());
 
@@ -26,24 +26,17 @@ public:
 
         // wait for action server running
         if (!this->client_ptr_->wait_for_action_server(this->wait_for_timeout_)){
-            RCLCPP_ERROR(this->get_logger(), "%s action server not available after waiting for 1 s", this->action_name_.c_str());
-            rclcpp::shutdown();
+            RCLCPP_ERROR(this->get_logger(), "%s action server not available after waiting for 2 s", this->action_name_.c_str());
+            return;
         }
     }
 
-    void cancelGoal(){
-        using namespace std::placeholders;
-
+    void cancelGoal() {
+        auto future_cancel = this->client_ptr_->async_cancel_all_goals();
         this->timer_->cancel();
 
-        auto future_cancel = this->client_ptr_->async_cancel_all_goals();
-
-        if (this->callback_group_executor_.spin_until_future_complete(future_cancel) != rclcpp::FutureReturnCode::SUCCESS){
-            RCLCPP_ERROR(this->get_logger(), "Failed to cancel the action server for %s", this->action_name_.c_str());
-            rclcpp::shutdown();
-        }
         RCLCPP_INFO(this->get_logger(), "Canceled all goals. Stop the robot.");
-        rclcpp::shutdown();
+
     }
 
 private:
@@ -60,7 +53,16 @@ int main(int argc, char** argv){
 
     rclcpp::init(argc, argv);
     auto node = std::make_shared<StopNav2>("stop_nav2_client");
-    rclcpp::spin(node);
 
+    try
+    {
+        rclcpp::spin(node);
+    }
+    catch(std::exception& e)
+    {
+        RCLCPP_INFO(node->get_logger(), "Shutting down...");
+    }
+    
+    rclcpp::shutdown();
     return 0;
 }
